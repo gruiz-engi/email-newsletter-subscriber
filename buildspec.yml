@@ -7,13 +7,13 @@ phases:
   pre_build:
     commands:
       - cd $CODEBUILD_SRC_DIR/aws-sdk-v2-layer/nodejs
-      - npm ci --only=production
+      - npm ci
       - cd $CODEBUILD_SRC_DIR/post-endpoint-subscriptions
-      - npm ci --only=production
+      - npm ci
       - cd ../endpoint-subscriber
-      - npm ci --only=production
+      - npm ci
       - cd ../subscriber-greetings-message
-      - npm ci --only=production
+      - npm ci
   build:
     commands:
       - cd $CODEBUILD_SRC_DIR/aws-sdk-v2-layer/nodejs
