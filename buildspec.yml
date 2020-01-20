@@ -1,0 +1,33 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+      nodejs: 10
+  pre_build:
+    commands:
+      - cd $CODEBUILD_SRC_DIR/aws-sdk-v2-layer/nodejs
+      - npm install
+      - cd $CODEBUILD_SRC_DIR/post-endpoint-subscriptions
+      - npm install
+      - cd ../endpoint-subscriber
+      - npm install
+      - cd ../subscriber-greetings-message
+      - npm install
+  build:
+    commands:
+      - cd $CODEBUILD_SRC_DIR/aws-sdk-v2-layer/nodejs
+      - S3_BUCKET_NAME=$S3_BUCKET_NAME S3_PREFIX=$S3_PREFIX npm run build
+      - cd $CODEBUILD_SRC_DIR/post-endpoint-subscriptions
+      - S3_BUCKET_NAME=$S3_BUCKET_NAME S3_PREFIX=$S3_PREFIX npm run build
+      - cd ../endpoint-subscriber
+      - S3_BUCKET_NAME=$S3_BUCKET_NAME S3_PREFIX=$S3_PREFIX npm run build
+      - cd ../subscriber-greetings-message
+      - S3_BUCKET_NAME=$S3_BUCKET_NAME S3_PREFIX=$S3_PREFIX npm run build
+      - cd ..
+      - aws cloudformation package --template-file template.yaml --output-template-file $OUTPUT_TEMPLATE_NAME.yaml --s3-bucket $S3_BUCKET_NAME
+artifacts:
+  files:
+    - $OUTPUT_TEMPLATE_NAME.yaml
+    - prod-stack-configuration.json
+    - staging-stack-configuration.json

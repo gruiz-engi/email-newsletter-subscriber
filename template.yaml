@@ -1,0 +1,227 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Set up email newsletter subscriber using SAM application
+Parameters:
+  AppName:
+    Description: The Application name
+    Type: String
+  StackStage:
+    AllowedValues:
+      - Dev
+      - Stage
+      - Prod
+    ConstraintDescription: must be a valid stage [Dev, Stage, Prod].
+    Default: Stage
+    Description: Stack environment stage.
+    Type: String
+  FromEmailAddress:
+    Description: Address to use as email sender. Should be a verified email or domain name.
+    Type: String
+  AllowOrigin:
+    Description: CORS allowed origins value.
+    Type: String
+
+Globals:
+  Function:
+    Runtime: nodejs10.x
+    Timeout: 10
+    Handler: app.lambdaHandler
+    Environment:
+      Variables:
+        STAGE: !Ref StackStage
+  Api:
+    Name: 'NewsletterSubscriberService'
+    Cors:
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+      AllowOrigin: !Sub "'${AllowOrigin}'"
+      MaxAge: "'86400'"
+    Auth:
+      ApiKeyRequired: False
+
+Resources:
+  #****** Pinpoint Configuration ******#
+  PinpointApplication:
+    Type: AWS::Pinpoint::App
+    Properties:
+      Name: !Ref AWS::StackName
+
+  PinpointEmailChannelFeature:
+    Type: AWS::Pinpoint::EmailChannel
+    Properties: 
+      ApplicationId: !Ref PinpointApplication
+      Enabled: True
+      FromAddress: !Ref FromEmailAddress
+      Identity: !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${FromEmailAddress}'
+  
+  UsersSegment:
+    Type: AWS::Pinpoint::Segment
+    Properties: 
+      ApplicationId: !Ref PinpointApplication
+      Name: 'All Users'
+      SegmentGroups: 
+        Groups: 
+          - Dimensions:
+            - Demographic:
+                Channel:
+                  DimensionType: 'INCLUSIVE'
+                  Values:
+                    - 'EMAIL'
+            SourceType: 'ANY'
+            Type: 'ALL'
+        Include: 'ALL'
+  
+  NewsletterSegment:
+    Type: AWS::Pinpoint::Segment
+    Properties: 
+      ApplicationId: !Ref PinpointApplication
+      Name: 'Newsletter'
+      SegmentGroups: 
+        Groups: 
+          - Dimensions:
+            - Demographic:
+                Channel:
+                  DimensionType: 'INCLUSIVE'
+                  Values:
+                    - 'EMAIL'
+            - Attributes:
+                MonthlyNlOptStatus:
+                  AttributeType: 'INCLUSIVE'
+                  Values:
+                    - 'OptIn'
+            SourceType: 'ANY'
+            Type: 'ALL'
+        Include: 'ALL'
+
+  InactiveSegment:
+    Type: AWS::Pinpoint::Segment
+    Properties: 
+      ApplicationId: !Ref PinpointApplication
+      Name: '14+days Inactive'
+      SegmentGroups: 
+        Groups: 
+          - Dimensions:
+            - Demographic:
+                Channel:
+                  DimensionType: 'INCLUSIVE'
+                  Values:
+                    - 'EMAIL'
+            - Behavior:
+                Recency:
+                  Duration: 'DAY_14'
+                  RecencyType: 'INACTIVE'
+            SourceType: 'ALL'
+            Type: 'ALL'
+        Include: 'ALL'
+
+  SubscribedGreetingPinpointTemplate:
+    Type: AWS::Pinpoint::EmailTemplate
+    Properties:
+      TemplateName: !Sub '${AppName}-${StackStage}-greeting'
+      Subject: 'Thanks for Subscribing'
+      HtmlPart: '<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>This is the default template. Change this.</body></html>'
+
+  #****** Lambda Layers ******#
+  AWSSDKV2Layer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: aws-sdk-v2-layer
+      Description: Layer containing aws-sdk v2 package.
+      ContentUri: s3://S3_BUCKET_NAME/S3_PREFIX/aws-sdk-v2-layer-1.0.0.zip
+      CompatibleRuntimes:
+        - nodejs6.10
+        - nodejs8.10
+        - nodejs10.x
+      LicenseInfo: 'Available under the MIT-0 license.'
+      RetentionPolicy: Retain
+
+  #****** API Definition ******#
+  NewsletterSubscriberAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StackStage
+
+  # API Lambda Function Handlers
+  PostEndpointSubsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/post-endpoint-subscriptions-1.0.0.zip
+      Environment:
+        Variables:
+          TOPIC: !Ref SubscriptionsTopic
+          ENABLE_CORS: 'yes'
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:Publish'
+              Resource: !Ref SubscriptionsTopic
+      Events:
+        PostEndSubs:
+          Type: Api
+          Properties:
+            Path: /subscriptions
+            Method: post
+            RestApiId: !Ref NewsletterSubscriberAPI
+      Layers:
+        - !Ref AWSSDKV2Layer
+      AutoPublishAlias: !Ref StackStage
+
+  #********* Subscription Workflow *********#
+  # SNS Topic
+  SubscriptionsTopic:
+    Type: AWS::SNS::Topic
+    Properties: {}
+  
+  # Add to Audience
+  EndpointSubscriberFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/endpoint-subscriber-1.0.0.zip
+      Environment:
+        Variables:
+          PROJECT_ID: !Ref PinpointApplication
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'mobiletargeting:UpdateEndpoint'
+              Resource:
+                - !Sub 'arn:aws:mobiletargeting:*:${AWS::AccountId}:apps/${PinpointApplication}*'
+      Events:
+        SubscriptionsTopic:
+          Type: SNS
+          Properties:
+            Topic: !Ref SubscriptionsTopic
+      AutoPublishAlias: !Ref StackStage
+  
+  # Send E-mail Greeting Subscriber
+  SubscriberGreetsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/subscriber-greetings-message-1.0.0.zip
+      Environment:
+        Variables:
+          PROJECT_ID: !Ref PinpointApplication
+          TEMPLATE: !Ref SubscribedGreetingPinpointTemplate
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'mobiletargeting:SendMessages'
+              Resource: 
+                - !Sub 'arn:aws:mobiletargeting:*:${AWS::AccountId}:apps/${PinpointApplication}*'
+      Events:
+        SubscriptionsTopic:
+          Type: SNS
+          Properties:
+            Topic: !Ref SubscriptionsTopic
+      Layers:
+        - !Ref AWSSDKV2Layer
+      AutoPublishAlias: !Ref StackStage
+
+Outputs:
+  PinpointAppId:
+    Value: !Ref PinpointApplication

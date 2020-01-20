@@ -1,0 +1,8 @@
+{
+    "Parameters": {
+        "AppName": "NewsletterSubscriber",
+        "StackStage": "Stage",
+        "FromEmailAddress": "EXAMPLE@email.com",
+        "AllowOrigin": "*"
+    }
+}
