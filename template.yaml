@@ -126,7 +126,20 @@ Resources:
     Properties:
       LayerName: aws-sdk-v2-layer
       Description: Layer containing aws-sdk v2 package.
-      ContentUri: s3://S3_BUCKET_NAME/S3_PREFIX/aws-sdk-v2-layer-1.0.0.zip
+      ContentUri: s3://dev-sam-app-deployment/test/aws-sdk-v2-layer-1.0.0.zip
+      CompatibleRuntimes:
+        - nodejs6.10
+        - nodejs8.10
+        - nodejs10.x
+      LicenseInfo: 'Available under the MIT-0 license.'
+      RetentionPolicy: Retain
+
+  ValidateLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: validate-layer
+      Description: Layer containing validate npm package.
+      ContentUri: s3://dev-sam-app-deployment/test/validate-layer-1.0.0.zip
       CompatibleRuntimes:
         - nodejs6.10
         - nodejs8.10
@@ -144,7 +157,7 @@ Resources:
   PostEndpointSubsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/post-endpoint-subscriptions-1.0.0.zip
+      CodeUri: s3://dev-sam-app-deployment/test/post-endpoint-subscriptions-1.1.0.zip
       Environment:
         Variables:
           TOPIC: !Ref SubscriptionsTopic
@@ -165,6 +178,7 @@ Resources:
             RestApiId: !Ref NewsletterSubscriberAPI
       Layers:
         - !Ref AWSSDKV2Layer
+        - !Ref ValidateLayer
       AutoPublishAlias: !Ref StackStage
 
   #********* Subscription Workflow *********#
@@ -177,7 +191,7 @@ Resources:
   EndpointSubscriberFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/endpoint-subscriber-1.0.0.zip
+      CodeUri: s3://dev-sam-app-deployment/test/endpoint-subscriber-1.0.0.zip
       Environment:
         Variables:
           PROJECT_ID: !Ref PinpointApplication
@@ -200,7 +214,7 @@ Resources:
   SubscriberGreetsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/subscriber-greetings-message-1.0.0.zip
+      CodeUri: s3://dev-sam-app-deployment/test/subscriber-greetings-message-1.0.0.zip
       Environment:
         Variables:
           PROJECT_ID: !Ref PinpointApplication
