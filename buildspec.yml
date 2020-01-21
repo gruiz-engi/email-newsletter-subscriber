@@ -8,6 +8,8 @@ phases:
     commands:
       - cd $CODEBUILD_SRC_DIR/aws-sdk-v2-layer/nodejs
       - npm ci
+      - cd $CODEBUILD_SRC_DIR/validate-layer/nodejs
+      - npm ci
       - cd $CODEBUILD_SRC_DIR/post-endpoint-subscriptions
       - npm ci
       - cd ../endpoint-subscriber
@@ -17,6 +19,8 @@ phases:
   build:
     commands:
       - cd $CODEBUILD_SRC_DIR/aws-sdk-v2-layer/nodejs
+      - S3_BUCKET_NAME=$S3_BUCKET_NAME S3_PREFIX=$S3_PREFIX npm run build
+      - cd $CODEBUILD_SRC_DIR/validate-layer/nodejs
       - S3_BUCKET_NAME=$S3_BUCKET_NAME S3_PREFIX=$S3_PREFIX npm run build
       - cd $CODEBUILD_SRC_DIR/post-endpoint-subscriptions
       - S3_BUCKET_NAME=$S3_BUCKET_NAME S3_PREFIX=$S3_PREFIX npm run build

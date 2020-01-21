@@ -1,0 +1,19 @@
+{
+    "name": "validate-layer",
+    "version": "1.0.0",
+    "description": "npm validate lib",
+    "main": "app.js",
+    "author": "Guillermo J Ruiz Bonilla",
+    "license": "MIT",
+    "scripts": {
+        "build": "npm-run-all -s build:*",
+        "build:pack": "zip -r $npm_package_name-$npm_package_version.zip ../ -x ../.DS_Store",
+        "build:upload": "aws s3 cp $npm_package_name-$npm_package_version.zip s3://$S3_BUCKET_NAME/$S3_PREFIX/$npm_package_name-$npm_package_version.zip"
+    },
+    "dependencies": {
+        "validate": "^5.1.0"
+    },
+    "devDependencies": {
+        "npm-run-all": "^4.1.5"
+    }
+}
