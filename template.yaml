@@ -192,7 +192,7 @@ Resources:
   EndpointSubscriberFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/endpoint-subscriber-1.0.0.zip
+      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/endpoint-subscriber-1.0.1.zip
       Environment:
         Variables:
           PROJECT_ID: !Ref PinpointApplication

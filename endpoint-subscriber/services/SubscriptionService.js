@@ -18,17 +18,16 @@ module.exports = class SubscriptionService {
      * @param {String} params.Attributes.MonthlyNlOptStatus
      * @param {String} params.Attributes.OptStatusLastChanged
      * @param {String} params.Attributes.OptSource
-     * @param {String} params.Demographic
      */
     async emailSubscription(projectId, params) {
-        if(!projectId || !params.Address) {
+        if(!projectId || !params.Address || !params.Attributes) {
             let error = new Error("Missing required field");
             error.name = "RequiredFieldError";
             throw error;
         }
         let email = params.Address;
         params.Attributes = this._mapAttributes(params.Attributes);
-        params.User.Attributes = this._mapAttributes(params.User.Attributes);
+        if(params.User && params.User.Attributes) params.User.Attributes = this._mapAttributes(params.User.Attributes);
         params.ChannelType = 'EMAIL';
         params.OptOut = 'NONE';
 

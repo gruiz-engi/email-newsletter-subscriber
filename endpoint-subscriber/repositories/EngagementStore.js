@@ -51,7 +51,7 @@ module.exports = class EngagementStore {
         let userMap = {
             UserId: userId
         }
-        if(User) userMap.UserAttributes = User.Attributes;
+        if(User && User.Attributes) userMap.UserAttributes = User.Attributes;
         var params = {
             ApplicationId: projectId,
             EndpointId: endpointId,
