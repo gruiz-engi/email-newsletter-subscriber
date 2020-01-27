@@ -10,6 +10,7 @@ describe('Tests index', () => {
     before(function() {
         process.env.ENABLE_CORS = 'yes';
         process.env.TOPIC = 'arn:topic_name';
+        process.env.ALLOW_ORIGIN = '*';
     });
 
     it('verifies successful response', async () => {
@@ -65,6 +66,7 @@ describe('Tests index', () => {
         });
         expect(response).to.be.an('object');
         expect(response.statusCode).to.be.equal(202);
+        expect(response.headers).to.have.property('Access-Control-Allow-Origin', '*');
         let body = JSON.parse(response.body);
         expect(body).to.have.property('Id').and.to.be.an('string');
         expect(handleEmailSubscriptionFake.calledOnceWith(process.env.TOPIC, endpoint)).to.be.true;
@@ -125,6 +127,7 @@ describe('Tests index', () => {
         });
         expect(response).to.be.an('object');
         expect(response.statusCode).to.be.equal(400);
+        expect(response.headers).to.have.property('Access-Control-Allow-Origin', '*');
         let body = JSON.parse(response.body);
         expect(body).to.have.property('Message').and.to.be.an('string');
     });
@@ -184,6 +187,7 @@ describe('Tests index', () => {
         });
         expect(response).to.be.an('object');
         expect(response.statusCode).to.be.equal(404);
+        expect(response.headers).to.have.property('Access-Control-Allow-Origin', '*');
         let body = JSON.parse(response.body);
         expect(body).to.have.property('Message').and.to.be.an('string');
     });
@@ -243,6 +247,7 @@ describe('Tests index', () => {
         });
         expect(response).to.be.an('object');
         expect(response.statusCode).to.be.equal(500);
+        expect(response.headers).to.have.property('Access-Control-Allow-Origin', '*');
         let body = JSON.parse(response.body);
         expect(body).to.have.property('Message').and.to.be.an('string');
     });
