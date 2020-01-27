@@ -38,9 +38,6 @@ describe('Tests Controller', function () {
                 MonthlyNlOptStatus: "OptIn",
                 OptStatusLastChanged: "2019-05-15T10:05:59.064Z",
                 OptSource: "unit_test"
-            },
-            Demographic: {
-                Timezone: 'America/Puerto_Rico'
             }
         };
 
@@ -92,9 +89,6 @@ describe('Tests Controller', function () {
                 MonthlyNlOptStatus: "OptIn",
                 OptStatusLastChanged: "2019-05-15T10:05:59.064Z",
                 OptSource: "unit_test"
-            },
-            Demographic: {
-                Timezone: 'America/Puerto_Rico'
             }
         };
 

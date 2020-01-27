@@ -1,6 +1,6 @@
 {
   "name": "endpoint-subscriber",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Create/update endpoint subscription function",
   "main": "app.js",
   "author": "Guillermo J Ruiz Bonilla",
