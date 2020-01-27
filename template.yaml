@@ -157,11 +157,12 @@ Resources:
   PostEndpointSubsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/post-endpoint-subscriptions-1.1.0.zip
+      CodeUri: s3://S3_BUCKET_NAME/S3_PREFIX/post-endpoint-subscriptions-1.1.3.zip
       Environment:
         Variables:
           TOPIC: !Ref SubscriptionsTopic
           ENABLE_CORS: 'yes'
+          ALLOW_ORIGIN: !Ref AllowOrigin
       Policies:
         - Version: '2012-10-17'
           Statement:
