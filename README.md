@@ -1,6 +1,10 @@
 # email-newsletter-subscriber
 This repo contains a solution to showcase the use of various AWS services to build a email newsletter subscriber. The solution subscribes a email address to a newsletter by adding it as an endpoint on AWS Pinpoint. It uses the endpoint attributes (see file req-body-example.json and look for MonthlyNlOptStatus) to derive the monthly newsletter audience segment. Also, as part of the subscription workflow, greets the subscriber by sending a transactional email using AWS Pinpoint email message and AWS Pinpoint templates for email content. The solution has a event-driven architecture by using AWS SNS topic to notify subscriptions events and lambda subs to accomplish newsletter subscription workflow. AWS SAM was used to easily deploy a serverless architecture solution.
 
+![activity diagram](common/images/activity-diagram.png "Subscription Workflow Activity Diagram")
+
+![aws diagram](common/images/aws-diagram.png "AWS Solution Diagram")
+
 ## How to deploy
 Here are two ways to deploy the solution. One is from a development machine and the other is using the `buildspec.yml` in a release process.
 
