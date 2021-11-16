@@ -21,7 +21,7 @@
     "sinon": "^7.3.2"
   },
   "dependencies": {
-    "aws-sdk": "^2.446.0",
+    "aws-sdk": "^2.814.0",
     "validate": "^5.1.0"
   }
 }
